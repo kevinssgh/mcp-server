@@ -49,6 +49,42 @@ impl AgentMcpServer {
             })?;
         Ok(CallToolResult::success(vec![Content::text(balance)]))
     }
+
+    // Balance command
+    #[tool(description = "Sends an amount in ETH from one address to another")]
+    async fn send(
+        &self,
+        Parameters(input): Parameters<super::eth_tools::SendInput>,
+    ) -> std::result::Result<CallToolResult, ErrorData> {
+        let receipt = self
+            .ctx
+            .lock()
+            .await
+            .m_tool
+            .send(input.sender, input.receiver, input.amount)
+            .await
+            .map_err(|e| ErrorData::internal_error(format!("server failed to send: {e}"), None))?;
+        Ok(CallToolResult::success(vec![Content::text(receipt)]))
+    }
+
+    // Balance command
+    #[tool(description = "Checks whether a contract is deployed given the address")]
+    async fn get_contract(
+        &self,
+        Parameters(input): Parameters<super::eth_tools::GetContractInput>,
+    ) -> std::result::Result<CallToolResult, ErrorData> {
+        let reply = self
+            .ctx
+            .lock()
+            .await
+            .m_tool
+            .get_contract(input.addr)
+            .await
+            .map_err(|e| {
+                ErrorData::internal_error(format!("server failed to get contract: {e}"), None)
+            })?;
+        Ok(CallToolResult::success(vec![Content::text(reply)]))
+    }
 }
 
 #[tool_handler]

@@ -17,11 +17,11 @@ const KEYS: [&str; 10] = [
 ];
 
 pub struct Account {
-    wallet: LocalWallet,
+    pub(crate) wallet: LocalWallet,
 }
 
 pub struct Accounts {
-    wallets: HashMap<Address, Account>,
+    pub(crate) wallets: HashMap<Address, Account>,
 }
 
 impl Accounts {

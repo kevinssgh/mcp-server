@@ -1,4 +1,3 @@
-use crate::common::accounts::Accounts;
 use crate::tools::traits::EvmTools;
 use serde::{Deserialize, Serialize};
 use std::marker::Send;
@@ -10,16 +9,11 @@ where
 {
     pub m_tool: T,
     pub cfg: Config,
-    pub accounts: Accounts,
 }
 
 impl<T: EvmTools + Send> Context<T> {
     pub fn new(m_tool: T, cfg: Config) -> Self {
-        Self {
-            m_tool,
-            cfg,
-            accounts: Accounts::new(),
-        }
+        Self { m_tool, cfg }
     }
 }
 
