@@ -1,20 +1,21 @@
-use std::str::FromStr;
 use anyhow::Result;
 use rmcp::handler::server::tool::{Parameters, ToolRouter};
 use rmcp::model::{Implementation, ProtocolVersion};
 use rmcp::{ServerHandler, model::*, tool_handler, tool_router, tool};
 use std::sync::Arc;
-use ethers::middleware::Middleware;
-use ethers::prelude::{Address, NameOrAddress};
 use tokio::sync::Mutex;
-use crate::common::context::Context;
+
+use crate::common::context::{Config, Context};
+use crate::tools::MultiTool;
+use crate::tools::traits::EvmTools;
 
 // Main server struct that implements ServerHandler
 #[allow(dead_code)] // ignore some warnings that aren't helpful
 #[derive(Debug, Clone)]
-pub struct AgentMcpServer {
+pub struct AgentMcpServer
+{
     // Internal state - Contains server context, behind Atomic Reference and Mutex for thread safety
-    pub(crate) ctx: Arc<Mutex<Context>>,
+    pub(crate) ctx: Arc<Mutex<Context<MultiTool>>>,
     // Tool Router
     tool_router: ToolRouter<AgentMcpServer>,
 }
@@ -22,8 +23,11 @@ pub struct AgentMcpServer {
 #[tool_router]
 impl AgentMcpServer {
     pub fn new() -> Self {
+        let cfg = Config::new();
+        let m_tool = MultiTool::new(&cfg.eth_rpc);
+
         AgentMcpServer {
-            ctx: Arc::new(Mutex::new(Context::new())),
+            ctx: Arc::new(Mutex::new(Context::new(m_tool, cfg))),
             tool_router: Self::tool_router(),
         }
     }
@@ -34,20 +38,18 @@ impl AgentMcpServer {
         &self,
         Parameters(address): Parameters<super::eth_tools::BalanceInput>,
     ) -> std::result::Result<CallToolResult, ErrorData> {
-        //let addr = NameOrAddress::from(&address.addr);
-        let ad = Address::from_str(&address.addr).unwrap();
         let balance = self
             .ctx
             .lock()
             .await
-            .provider
-            .get_balance(ad, None)
+            .m_tool
+            .get_balance(address.addr)
             .await
             .map_err(|e| {
-                ErrorData::internal_error(format!("failed to get balance: {}", e.to_string()), None)
+                ErrorData::internal_error(format!("server failed to get balance: {e}"), None)
             })?;
         Ok(CallToolResult::success(vec![Content::text(
-            balance.to_string(),
+            balance,
         )]))
     }
 }

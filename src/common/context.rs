@@ -1,21 +1,23 @@
-use ethers::prelude::*;
 use serde::{Deserialize, Serialize};
+use std::marker::Send;
+
+use crate::tools::traits::EvmTools;
 
 #[allow(dead_code)]
 #[derive(Debug)]
-pub struct Context {
-    pub provider: Provider<Http>,
+pub struct Context<T>
+where T: EvmTools + Send
+{
+    pub m_tool: T,
     pub cfg: Config,
 }
 
-impl Context {
-    pub fn new() -> Self {
-        let cfg = Config::new();
-        tracing::info!("Creating ETH provider");
-        let provider = Provider::<Http>::try_from(&cfg.eth_rpc)
-            .expect("should build provider to local eth node");
-
-        Self { provider, cfg }
+impl <T: EvmTools + Send> Context<T> {
+    pub fn new(m_tool: T, cfg: Config) -> Self {
+        Self {
+            m_tool,
+            cfg
+        }
     }
 }
 
