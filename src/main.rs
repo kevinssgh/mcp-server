@@ -1,8 +1,7 @@
-mod agent_mcp;
-mod context;
 mod tools;
+mod common;
 
-use crate::agent_mcp::AgentMcpServer;
+use tools::agent_mcp::AgentMcpServer;
 
 use anyhow::Result;
 use rmcp::transport::sse_server::{SseServer, SseServerConfig};

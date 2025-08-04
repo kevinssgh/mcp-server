@@ -1,5 +1,4 @@
 use std::str::FromStr;
-use crate::context::Context;
 use anyhow::Result;
 use rmcp::handler::server::tool::{Parameters, ToolRouter};
 use rmcp::model::{Implementation, ProtocolVersion};
@@ -8,6 +7,7 @@ use std::sync::Arc;
 use ethers::middleware::Middleware;
 use ethers::prelude::{Address, NameOrAddress};
 use tokio::sync::Mutex;
+use crate::common::context::Context;
 
 // Main server struct that implements ServerHandler
 #[allow(dead_code)] // ignore some warnings that aren't helpful
@@ -32,7 +32,7 @@ impl AgentMcpServer {
     #[tool(description = "Get the balance of an account in wei")]
     async fn balance(
         &self,
-        Parameters(address): Parameters<crate::tools::eth_tools::BalanceInput>,
+        Parameters(address): Parameters<super::eth_tools::BalanceInput>,
     ) -> std::result::Result<CallToolResult, ErrorData> {
         //let addr = NameOrAddress::from(&address.addr);
         let ad = Address::from_str(&address.addr).unwrap();
