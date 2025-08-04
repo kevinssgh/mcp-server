@@ -1,0 +1,10 @@
+build:
+	cargo build
+fmt:
+	cargo fmt
+lint:
+	cargo clippy
+run:
+	cargo run
+install:
+	cargo install --path .

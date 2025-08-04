@@ -1,22 +1,24 @@
+use crate::common::accounts::Accounts;
+use crate::tools::traits::EvmTools;
 use serde::{Deserialize, Serialize};
 use std::marker::Send;
 
-use crate::tools::traits::EvmTools;
-
 #[allow(dead_code)]
-#[derive(Debug)]
 pub struct Context<T>
-where T: EvmTools + Send
+where
+    T: EvmTools + Send,
 {
     pub m_tool: T,
     pub cfg: Config,
+    pub accounts: Accounts,
 }
 
-impl <T: EvmTools + Send> Context<T> {
+impl<T: EvmTools + Send> Context<T> {
     pub fn new(m_tool: T, cfg: Config) -> Self {
         Self {
             m_tool,
-            cfg
+            cfg,
+            accounts: Accounts::new(),
         }
     }
 }

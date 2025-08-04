@@ -1,7 +1,7 @@
-use std::str::FromStr;
+use anyhow::{Result, anyhow};
 use ethers::prelude::*;
 use rmcp::schemars;
-use anyhow::{anyhow, Result};
+use std::str::FromStr;
 
 use crate::tools::MultiTool;
 use crate::tools::traits::EvmTools;
@@ -16,20 +16,18 @@ pub struct BalanceInput {
 impl EvmTools for MultiTool {
     async fn get_balance(&self, address: String) -> Result<String> {
         let addr = Address::from_str(&address)?;
-        let balance = self.provider.get_balance(addr, None).await.map_err(
-            |e| {
-                // Add tracing
-                anyhow!("failed to get balance from {}: {}", address, e.to_string())
-            }
-        )?;
+        let balance = self.provider.get_balance(addr, None).await.map_err(|e| {
+            // Add tracing
+            anyhow!("failed to get balance from {}: {}", address, e.to_string())
+        })?;
         Ok(balance.to_string())
     }
 
-    async fn send(&self ) -> String {
+    async fn send(&self) -> String {
         todo!()
     }
 
-    async fn get_contract(&self ) -> String {
+    async fn get_contract(&self) -> String {
         todo!()
     }
 }

@@ -1,7 +1,7 @@
 use anyhow::Result;
 use rmcp::handler::server::tool::{Parameters, ToolRouter};
 use rmcp::model::{Implementation, ProtocolVersion};
-use rmcp::{ServerHandler, model::*, tool_handler, tool_router, tool};
+use rmcp::{ServerHandler, model::*, tool, tool_handler, tool_router};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -11,9 +11,8 @@ use crate::tools::traits::EvmTools;
 
 // Main server struct that implements ServerHandler
 #[allow(dead_code)] // ignore some warnings that aren't helpful
-#[derive(Debug, Clone)]
-pub struct AgentMcpServer
-{
+#[derive(Clone)]
+pub struct AgentMcpServer {
     // Internal state - Contains server context, behind Atomic Reference and Mutex for thread safety
     pub(crate) ctx: Arc<Mutex<Context<MultiTool>>>,
     // Tool Router
@@ -48,9 +47,7 @@ impl AgentMcpServer {
             .map_err(|e| {
                 ErrorData::internal_error(format!("server failed to get balance: {e}"), None)
             })?;
-        Ok(CallToolResult::success(vec![Content::text(
-            balance,
-        )]))
+        Ok(CallToolResult::success(vec![Content::text(balance)]))
     }
 }
 

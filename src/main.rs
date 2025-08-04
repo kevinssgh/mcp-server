@@ -1,5 +1,5 @@
-mod tools;
 mod common;
+mod tools;
 
 use tools::agent_mcp::AgentMcpServer;
 
