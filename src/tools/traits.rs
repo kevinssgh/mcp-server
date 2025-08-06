@@ -12,3 +12,24 @@ pub(crate) trait EvmTools {
 pub(crate) trait BraveTools {
     async fn search(&self, query: String) -> Result<String>;
 }
+
+/// Interface to 0x api for swap quotes.
+pub(crate) trait ZeroXTools {
+    async fn get_quote(
+        &self,
+        from_token: String,
+        to_token: String,
+        amount: String,
+    ) -> Result<String>;
+}
+
+/// Interface to Uniswap contract abi.
+pub(crate) trait UniSwapTools {
+    async fn swap_eth_to_token(&self, to_token: String, amount: String) -> Result<String>;
+    async fn swap_token_to_token(
+        &self,
+        from_token: String,
+        to_token: String,
+        amount: String,
+    ) -> Result<String>;
+}

@@ -23,6 +23,7 @@ pub struct Config {
     server_port: u32,
     pub(crate) eth_rpc: String,
     pub(crate) brave_api_key: String,
+    pub(crate) zero_x_api_key: String,
 }
 
 impl Config {
@@ -42,6 +43,7 @@ impl Default for Config {
             server_port: 3000u32,
             eth_rpc: String::from("http://127.0.0.1:8545"),
             brave_api_key: String::from("BSAurYK60YLTxZbBwMI2YhR-uIAVMAm"),
+            zero_x_api_key: String::from("a1672326-a68f-4dec-bd19-1dd1cd4fa1d0"),
         }
     }
 }

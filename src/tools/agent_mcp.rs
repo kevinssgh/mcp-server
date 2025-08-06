@@ -7,7 +7,7 @@ use tokio::sync::Mutex;
 
 use crate::common::context::{Config, Context};
 use crate::tools::MultiTool;
-use crate::tools::traits::{BraveTools, EvmTools};
+use crate::tools::traits::{BraveTools, EvmTools, ZeroXTools};
 
 // Main server struct that implements ServerHandler
 #[allow(dead_code)] // ignore some warnings that aren't helpful
@@ -121,6 +121,23 @@ impl AgentMcpServer {
             .search(input.query)
             .await
             .map_err(|e| ErrorData::internal_error(format!("web search failed: {e}"), None))?;
+        Ok(CallToolResult::success(vec![Content::text(reply)]))
+    }
+
+    // Get Swap quote from 0x Protocol
+    #[tool(description = "Gets a quote for a swap from one token type to another")]
+    async fn get_quote(
+        &self,
+        Parameters(input): Parameters<super::zero_x_tools::QuoteInput>,
+    ) -> std::result::Result<CallToolResult, ErrorData> {
+        let reply = self
+            .ctx
+            .lock()
+            .await
+            .m_tool
+            .get_quote(input.from_token, input.to_token, input.amount)
+            .await
+            .map_err(|e| ErrorData::internal_error(format!("quote request failed: {e}"), None))?;
         Ok(CallToolResult::success(vec![Content::text(reply)]))
     }
 }
