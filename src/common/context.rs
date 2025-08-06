@@ -22,6 +22,7 @@ pub struct Config {
     server_address: String,
     server_port: u32,
     pub(crate) eth_rpc: String,
+    pub(crate) brave_api_key: String,
 }
 
 impl Config {
@@ -32,12 +33,15 @@ impl Config {
     }
 }
 
+/// Get all configuration fields from environment variables for now. If this gets bigger
+/// it can be persisted to disk as file using Serialize.
 impl Default for Config {
     fn default() -> Self {
         Self {
             server_address: String::from("0.0.0.0"),
             server_port: 3000u32,
             eth_rpc: String::from("http://127.0.0.1:8545"),
+            brave_api_key: String::from("BSAurYK60YLTxZbBwMI2YhR-uIAVMAm"),
         }
     }
 }

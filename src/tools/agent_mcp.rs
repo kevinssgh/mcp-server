@@ -7,7 +7,7 @@ use tokio::sync::Mutex;
 
 use crate::common::context::{Config, Context};
 use crate::tools::MultiTool;
-use crate::tools::traits::EvmTools;
+use crate::tools::traits::{BraveTools, EvmTools};
 
 // Main server struct that implements ServerHandler
 #[allow(dead_code)] // ignore some warnings that aren't helpful
@@ -23,7 +23,7 @@ pub struct AgentMcpServer {
 impl AgentMcpServer {
     pub fn new() -> Self {
         let cfg = Config::new();
-        let m_tool = MultiTool::new(&cfg.eth_rpc);
+        let m_tool = MultiTool::new(&cfg);
 
         AgentMcpServer {
             ctx: Arc::new(Mutex::new(Context::new(m_tool, cfg))),
@@ -67,7 +67,7 @@ impl AgentMcpServer {
         Ok(CallToolResult::success(vec![Content::text(receipt)]))
     }
 
-    // Balance command
+    // Verify whether a contract is deployed
     #[tool(description = "Checks whether a contract is deployed given the address")]
     async fn get_contract(
         &self,
@@ -83,6 +83,44 @@ impl AgentMcpServer {
             .map_err(|e| {
                 ErrorData::internal_error(format!("server failed to get contract: {e}"), None)
             })?;
+        Ok(CallToolResult::success(vec![Content::text(reply)]))
+    }
+
+    // ERC20 Balance command
+    #[tool(
+        description = "Gets the balance of an address in wei for a specific currency given the erc20 contract address"
+    )]
+    async fn get_erc20_balance(
+        &self,
+        Parameters(input): Parameters<super::eth_tools::ERC20BalanceInput>,
+    ) -> std::result::Result<CallToolResult, ErrorData> {
+        let reply = self
+            .ctx
+            .lock()
+            .await
+            .m_tool
+            .get_erc20_balance(input.erc20_addr, input.account)
+            .await
+            .map_err(|e| {
+                ErrorData::internal_error(format!("server failed to get erc20 balance: {e}"), None)
+            })?;
+        Ok(CallToolResult::success(vec![Content::text(reply)]))
+    }
+
+    // Perform web search for contract addresses
+    #[tool(description = "Searches the web for different types of contract addresses")]
+    async fn web_search(
+        &self,
+        Parameters(input): Parameters<super::brave_tools::WebSearchInput>,
+    ) -> std::result::Result<CallToolResult, ErrorData> {
+        let reply = self
+            .ctx
+            .lock()
+            .await
+            .m_tool
+            .search(input.query)
+            .await
+            .map_err(|e| ErrorData::internal_error(format!("web search failed: {e}"), None))?;
         Ok(CallToolResult::success(vec![Content::text(reply)]))
     }
 }

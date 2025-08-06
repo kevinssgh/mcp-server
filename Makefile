@@ -4,7 +4,7 @@ fmt:
 	cargo fmt
 lint:
 	cargo clippy
-run:
+start:
 	cargo run
 install:
 	cargo install --path .

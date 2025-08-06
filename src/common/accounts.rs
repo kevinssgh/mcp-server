@@ -1,39 +1,134 @@
-use ethers::signers::{LocalWallet, Signer};
+use anyhow::{Result, anyhow};
+use ethers::signers::{LocalWallet, MnemonicBuilder, Signer};
 use ethers::types::Address;
 use std::collections::HashMap;
 
-/// These are only test keys, would normally store these in a key store or cold wallet
-const KEYS: [&str; 10] = [
-    "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
-    "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d",
-    "0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a",
-    "0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6",
-    "0x47e179ec197488593b187f80a00eb0da91f1b9d0b13f8733639f19c30a34926a",
-    "0x8b3a350cf5c34c9194ca85829a2df0ec3153be0318b5e2d3348e872092edffba",
-    "0x92db14e403b83dfe3df233f83dfa3a0d7096f21ca9b0d6d6b8d88b2b4ec1564e",
-    "0x4bbbf85ce3377467afe5d46f804f221813b2bb87f24d81f60f1fcdbf7cbf4356",
-    "0xdbda1821b80551c9d65939329250298aa3472ba22feea921c0cf5d620ea67b97",
-    "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
-];
+/// Anvil's default mnemonic phrase
+const ANVIL_MNEMONIC: &str = "test test test test test test test test test test test junk";
 
 pub struct Account {
     pub(crate) wallet: LocalWallet,
+    pub(crate) derivation_path: String,
 }
 
 pub struct Accounts {
     pub(crate) wallets: HashMap<Address, Account>,
+    pub(crate) mnemonic: String,
 }
 
 impl Accounts {
-    pub fn new() -> Self {
+    /// Create accounts from Anvil's default mnemonic
+    pub fn new() -> Result<Self> {
+        Self::from_mnemonic(ANVIL_MNEMONIC, 10)
+    }
+
+    /// Create accounts from a custom mnemonic
+    pub fn from_mnemonic(mnemonic: &str, count: u32) -> Result<Self> {
         let mut wallets = HashMap::new();
-        for key in KEYS {
+
+        for i in 0..count {
+            let derivation_path = format!("m/44'/60'/0'/0/{i}");
+
+            let wallet = MnemonicBuilder::<ethers::signers::coins_bip39::English>::default()
+                .phrase(mnemonic)
+                .derivation_path(&derivation_path)?
+                .build()
+                .map_err(|e| anyhow!("Failed to build wallet from mnemonic: {}", e))?;
+
+            let address = wallet.address();
             let account = Account {
-                wallet: key.parse().expect("parse private key string into wallet"),
+                wallet,
+                derivation_path: derivation_path.clone(),
             };
-            let address = account.wallet.address();
+
             wallets.insert(address, account);
         }
-        Self { wallets }
+
+        Ok(Self {
+            wallets,
+            mnemonic: mnemonic.to_string(),
+        })
+    }
+
+    /// Get wallet by address
+    pub fn get_wallet(&self, address: &Address) -> Option<&LocalWallet> {
+        self.wallets.get(address).map(|account| &account.wallet)
+    }
+
+    /// Get Default wallet
+    pub fn default_wallet(&self) -> Option<&LocalWallet> {
+        let addresses = self.addresses();
+        if !addresses.is_empty() {
+            let first_address = addresses[0];
+            return self.get_wallet(&first_address);
+        }
+        None
+    }
+
+    /// Get all addresses
+    pub fn addresses(&self) -> Vec<Address> {
+        self.wallets.keys().cloned().collect()
+    }
+
+    /// Print all account information
+    /// (TESTING ONLY)
+    #[allow(dead_code)]
+    pub fn print_accounts(&self) {
+        println!("Accounts derived from mnemonic:");
+        println!("Mnemonic: {}", self.mnemonic);
+        println!();
+
+        let mut addresses: Vec<_> = self.wallets.iter().collect();
+        addresses.sort_by_key(|(_, account)| &account.derivation_path);
+
+        for (i, (address, account)) in addresses.iter().enumerate() {
+            println!("Account #{i}: {address}");
+            println!(
+                "  Private Key: 0x{}",
+                hex::encode(account.wallet.signer().to_bytes())
+            );
+            println!("  Derivation Path: {}", account.derivation_path);
+            println!();
+        }
+    }
+}
+
+impl Default for Accounts {
+    fn default() -> Self {
+        Self::new().expect("Failed to create default accounts")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_anvil_accounts_creation() {
+        let accounts = Accounts::new().unwrap();
+        assert_eq!(accounts.wallets.len(), 10);
+
+        // Test that we can get addresses
+        let addresses = accounts.addresses();
+        assert_eq!(addresses.len(), 10);
+
+        // Test that all addresses are unique
+        let mut unique_addresses = addresses.clone();
+        unique_addresses.sort();
+        unique_addresses.dedup();
+        assert_eq!(unique_addresses.len(), 10);
+
+        accounts.print_accounts();
+    }
+
+    #[test]
+    fn test_get_wallet() {
+        let accounts = Accounts::new().unwrap();
+        let addresses = accounts.addresses();
+        let first_address = addresses[0];
+
+        let wallet = accounts.get_wallet(&first_address);
+        assert!(wallet.is_some());
+        assert_eq!(wallet.unwrap().address(), first_address);
     }
 }
