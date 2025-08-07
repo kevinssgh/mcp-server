@@ -12,6 +12,10 @@ mod eth_tools;
 mod zero_x_tools;
 
 pub mod traits;
+mod uniswap_tools;
+
+const DEFAULT_ETH_TOKEN_ADDRESS: &str = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
+const WETH_TOKEN_ADDRESS: &str = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2";
 
 pub struct MultiTool {
     pub eth_provider: Arc<Provider<Http>>,

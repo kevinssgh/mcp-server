@@ -3,11 +3,10 @@ mod tools;
 
 use tools::agent_mcp::AgentMcpServer;
 
+use crate::common::get_bind_address;
 use anyhow::Result;
 use rmcp::transport::sse_server::{SseServer, SseServerConfig};
 use tracing_subscriber::{self, EnvFilter};
-
-const BIND_ADDRESS: &str = "0.0.0.0:3000";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -24,10 +23,10 @@ async fn main() -> Result<()> {
 
     tracing::info!("Starting MCP server with tool groups");
     tracing::info!("Available tool groups:");
-    tracing::info!("eth_tools: balance, send");
+    tracing::info!("eth_tools | brave_tools | zero_x_tools | uniswap_tools");
 
     let config = SseServerConfig {
-        bind: BIND_ADDRESS.parse()?,
+        bind: get_bind_address()?.parse()?,
         sse_path: String::from("/sse"),
         post_path: String::from("/message"),
         ct: tokio_util::sync::CancellationToken::new(),

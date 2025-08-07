@@ -24,14 +24,24 @@ abigen!(
     ]"#,
 );
 
-#[allow(dead_code)]
+/// Balance Input data structure
+///
+///     Fields:
+///         addr (String): The address of the account to query the balance for
+///
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct BalanceInput {
     #[schemars(description = "The address or ENS name to check the balance for")]
     pub addr: String,
 }
 
-#[allow(dead_code)]
+/// Send input struct
+///
+///     Fields:
+///         sender (String): The sender address of the account to send ETH from
+///         receiver (String): The receiver address
+///         amount (String): The amount of ETH to send from sender to receiver
+///
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct SendInput {
     #[schemars(description = "The address or ENS name used to send ETH from")]
@@ -42,14 +52,23 @@ pub struct SendInput {
     pub amount: String,
 }
 
-#[allow(dead_code)]
+/// GetContract input struct
+///
+///     Fields:
+///         address (String): contract address to check
+///
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct GetContractInput {
     #[schemars(description = "The address of the contract to look for")]
     pub addr: String,
 }
 
-#[allow(dead_code)]
+/// ERC20Balance input struct
+///
+///     Fields:
+///         erc20_addr (String): contract address of the erc20 token
+///         account (String): the account whose balance is being queried
+///
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct ERC20BalanceInput {
     #[schemars(description = "The address of the ERC20 contract to look for")]
@@ -58,7 +77,16 @@ pub struct ERC20BalanceInput {
     pub account: String,
 }
 
+/// Trait implementation of EvmTools for MultiTool
+///
+///     Description: A toolset for some of the standard evm functions
+///
 impl EvmTools for MultiTool {
+    /// get_balance
+    ///
+    ///     Description:
+    ///         Queries the ETH balance of an address
+    ///
     async fn get_balance(&self, address: String) -> Result<String> {
         let addr = Address::from_str(&address)?;
         let balance = self
@@ -72,6 +100,12 @@ impl EvmTools for MultiTool {
         Ok(balance.to_string())
     }
 
+    /// send
+    ///
+    ///     Description:
+    ///         Builds a transaction to send ETH from one address to another, signs, executes and
+    ///         returns the transaction hash.
+    ///
     async fn send(&self, from: String, to: String, amount: String) -> Result<String> {
         let sender = Address::from_str(&from)?;
         let receiver = Address::from_str(&to)?;
@@ -110,9 +144,15 @@ impl EvmTools for MultiTool {
             Some(r) => Ok(r.transaction_hash),
         }?;
 
-        Ok(format!("transaction hash: {tx_hash:x}"))
+        Ok(format!("Transaction Successful! Hash: {tx_hash:x}"))
     }
 
+    /// get_contract
+    ///
+    ///     Description:
+    ///         Queries a contract address by retrieving its code in order to determine whether
+    ///         it was deployed.
+    ///
     async fn get_contract(&self, contract: String) -> Result<String> {
         let contract_addr = Address::from_str(&contract)?;
         let code = self.eth_provider.get_code(contract_addr, None).await?;
@@ -126,6 +166,11 @@ impl EvmTools for MultiTool {
         }
     }
 
+    /// get_erc20_balance
+    ///
+    ///     Description:
+    ///         Queries the balance of an account associated with an ERC20 token
+    ///
     async fn get_erc20_balance(&self, contract: String, account: String) -> Result<String> {
         // Convert strings to addresses
         let token_addr = Address::from_str(&contract)?;

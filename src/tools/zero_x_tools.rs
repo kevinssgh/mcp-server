@@ -7,7 +7,6 @@ use crate::tools::MultiTool;
 use crate::tools::traits::ZeroXTools;
 
 const BASE_URL: &str = "https://api.0x.org";
-const DEFAULT_ETH_TOKEN_ADDRESS: &str = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE";
 
 const QUOTE_PARAM_SELL_TOKEN: &str = "sellToken";
 const QUOTE_PARAM_BUY_TOKEN: &str = "buyToken";
@@ -19,7 +18,13 @@ const HEADER_VERSION: &str = "0x-version";
 
 const GET_PRICE_PATH: &str = "/swap/permit2/price";
 
-#[allow(dead_code)]
+/// Quote input struct
+///
+///     Fields:
+///         from_token (String): The contract address of the token type being swapped from
+///         to_token (String): The contract address of the token type being swapped to
+///         amount (String): The amount to process the quote for
+///
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct QuoteInput {
     #[schemars(
@@ -32,12 +37,24 @@ pub struct QuoteInput {
     pub amount: String,
 }
 
+/// ZeroXContext
+///
+///     Description:
+///         Used to keep the state of the connection to the 0x protocol.
+///
+///     Fields:
+///         client (reqwest::Client): An HTTP client used to connect and communicate with the
+///                                     0x protocol.
+///         api_key (String): Authentication key used for the 0x api.
+///         base_url (String): Base url of the 0x REST api
+///
 pub struct ZeroXContext {
     client: Client,
     api_key: String,
     base_url: String,
 }
 
+/// Context constructor
 impl ZeroXContext {
     pub fn new(api_key: String) -> Self {
         Self {
@@ -48,24 +65,28 @@ impl ZeroXContext {
     }
 }
 
+/// ZeroXTools
+///
+///     Description:
+///         A toolset to communicate with 0x protocol api. Only  implements one path to request
+///         quotes for token swaps.
+///
 impl ZeroXTools for MultiTool {
-    async fn get_quote(
-        &self,
-        mut from_token: String,
-        to_token: String,
-        amount: String,
-    ) -> anyhow::Result<String> {
+    async fn get_quote(&self, mut input: QuoteInput) -> anyhow::Result<String> {
         let mut params = HashMap::new();
         let url = format!("{}{GET_PRICE_PATH}", self.zero_x_context.base_url);
 
-        // If getting quote from Eth to another token
-        if from_token.to_lowercase().eq("eth") {
-            from_token = String::from(DEFAULT_ETH_TOKEN_ADDRESS)
+        // If getting quote with ETH as token type, need to convert to default address
+        if input.from_token.to_lowercase().eq("eth")  {
+            input.from_token = String::from(super::DEFAULT_ETH_TOKEN_ADDRESS)
+        }
+        if input.to_token.to_lowercase().eq("eth")  {
+            input.to_token = String::from(super::DEFAULT_ETH_TOKEN_ADDRESS)
         }
 
-        params.insert(QUOTE_PARAM_SELL_TOKEN, from_token);
-        params.insert(QUOTE_PARAM_BUY_TOKEN, to_token);
-        params.insert(QUOTE_PARAM_SELL_AMOUNT, amount);
+        params.insert(QUOTE_PARAM_SELL_TOKEN, input.from_token);
+        params.insert(QUOTE_PARAM_BUY_TOKEN, input.to_token);
+        params.insert(QUOTE_PARAM_SELL_AMOUNT, input.amount);
         params.insert(QUOTE_PARAM_CHAIN_ID, String::from("1"));
 
         let response = self

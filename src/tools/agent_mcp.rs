@@ -7,10 +7,9 @@ use tokio::sync::Mutex;
 
 use crate::common::context::{Config, Context};
 use crate::tools::MultiTool;
-use crate::tools::traits::{BraveTools, EvmTools, ZeroXTools};
+use crate::tools::traits::{BraveTools, EvmTools, UniSwapTools, ZeroXTools};
 
 // Main server struct that implements ServerHandler
-#[allow(dead_code)] // ignore some warnings that aren't helpful
 #[derive(Clone)]
 pub struct AgentMcpServer {
     // Internal state - Contains server context, behind Atomic Reference and Mutex for thread safety
@@ -26,7 +25,7 @@ impl AgentMcpServer {
         let m_tool = MultiTool::new(&cfg);
 
         AgentMcpServer {
-            ctx: Arc::new(Mutex::new(Context::new(m_tool, cfg))),
+            ctx: Arc::new(Mutex::new(Context::new(m_tool))),
             tool_router: Self::tool_router(),
         }
     }
@@ -135,9 +134,43 @@ impl AgentMcpServer {
             .lock()
             .await
             .m_tool
-            .get_quote(input.from_token, input.to_token, input.amount)
+            .get_quote(input)
             .await
             .map_err(|e| ErrorData::internal_error(format!("quote request failed: {e}"), None))?;
+        Ok(CallToolResult::success(vec![Content::text(reply)]))
+    }
+
+    // Use uniswap tools to swap eth for another token type
+    #[tool(description = "Swaps ETH tokens for a specified output token")]
+    async fn swap_eth_for_tokens(
+        &self,
+        Parameters(input): Parameters<super::uniswap_tools::SwapEthInput>,
+    ) -> std::result::Result<CallToolResult, ErrorData> {
+        let reply = self
+            .ctx
+            .lock()
+            .await
+            .m_tool
+            .swap_eth_to_token(input)
+            .await
+            .map_err(|e| ErrorData::internal_error(format!("token swap failed: {e}"), None))?;
+        Ok(CallToolResult::success(vec![Content::text(reply)]))
+    }
+
+    // Use uniswap tools to swap tokens for eth
+    #[tool(description = "Swaps specific tokens for eth")]
+    async fn swap_tokens_for_eth(
+        &self,
+        Parameters(input): Parameters<super::uniswap_tools::SwapTokenInput>,
+    ) -> std::result::Result<CallToolResult, ErrorData> {
+        let reply = self
+            .ctx
+            .lock()
+            .await
+            .m_tool
+            .swap_token_to_eth(input)
+            .await
+            .map_err(|e| ErrorData::internal_error(format!("token swap failed: {e}"), None))?;
         Ok(CallToolResult::success(vec![Content::text(reply)]))
     }
 }
