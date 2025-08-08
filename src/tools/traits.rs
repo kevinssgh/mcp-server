@@ -1,7 +1,6 @@
 use crate::tools::uniswap_tools::{SwapEthInput, SwapTokenInput};
 use crate::tools::zero_x_tools::QuoteInput;
 use anyhow::Result;
-use ethers::addressbook::Address;
 use ethers::prelude::U256;
 
 /// Interface to evm related tools used by Agent.
@@ -26,5 +25,5 @@ pub(crate) trait ZeroXTools {
 pub(crate) trait UniSwapTools {
     async fn swap_eth_to_token(&self, swap_input: SwapEthInput) -> Result<String>;
     async fn swap_token_to_eth(&self, swap_input: SwapTokenInput) -> Result<String>;
-    async fn check_balance(&self, account_addr: Address, amount_in: U256) -> Result<()>;
+    async fn check_balance(&self, amount_in: U256, balance: String) -> Result<()>;
 }

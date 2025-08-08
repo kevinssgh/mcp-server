@@ -87,7 +87,7 @@ impl AgentMcpServer {
 
     // ERC20 Balance command
     #[tool(
-        description = "Gets the balance of an address in wei for a specific currency given the erc20 contract address"
+        description = "Gets the balance of an address for a specific erc20 token using its defined denominations"
     )]
     async fn get_erc20_balance(
         &self,

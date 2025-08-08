@@ -181,6 +181,6 @@ impl EvmTools for MultiTool {
 
         // get balance
         let balance = contract.balance_of(account_addr).call().await?;
-        Ok(format!("balance is: {balance} in wei"))
+        Ok(format!("{balance}"))
     }
 }
