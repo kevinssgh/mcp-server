@@ -251,7 +251,7 @@ impl ServerHandler for AgentMcpServer {
                 .enable_tools()
                 .build(),
             server_info: Implementation::from_build_env(),
-            instructions: Some("This server provides a counter tool that can increment and decrement values. The counter starts at 0 and can be modified using the 'increment' and 'decrement' tools. Use 'get_value' to check the current count.".to_string()),
+            instructions: Some("This Server provides the following tools: eth_tools | brave_tools | zero_x_tools | uniswap_tools".to_string()),
         }
     }
 }
