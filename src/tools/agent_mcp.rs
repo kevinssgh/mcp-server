@@ -1,3 +1,68 @@
+//! Model Context Protocol (MCP) server for blockchain and DeFi operations.
+//!
+//! This module implements an MCP server that exposes blockchain interaction tools through
+//! a standardized protocol interface. It provides a comprehensive toolkit for Ethereum
+//! operations, DeFi protocols, and web search capabilities accessible via natural language
+//! through compatible AI agents.
+//!
+//! # Architecture
+//!
+//! - **AgentMcpServer**: Main server struct implementing the MCP ServerHandler protocol
+//! - **Thread-safe context**: Shared state management using Arc<Mutex<Context<MultiTool>>>
+//! - **Tool routing**: Automatic tool discovery and routing using procedural macros
+//! - **Error handling**: Standardized MCP error responses with detailed context
+//!
+//! # Available Tools
+//!
+//! ## Ethereum Operations
+//! - **`balance`**: Query ETH balance for any address
+//! - **`send`**: Transfer ETH between addresses with transaction confirmation
+//! - **`get_contract`**: Verify contract deployment and inspect bytecode
+//! - **`get_erc20_balance`**: Check ERC20 token balances
+//!
+//! ## DeFi Protocol Integration
+//! - **`get_quote`**: Get swap quotes from 0x Protocol aggregator
+//! - **`swap_eth_for_tokens`**: Execute ETH-to-token swaps via Uniswap V2
+//! - **`swap_tokens_for_eth`**: Execute token-to-ETH swaps via Uniswap V2
+//!
+//! ## Web Search
+//! - **`web_search`**: Search for contract addresses and blockchain information
+//!
+//! # Usage
+//!
+//! The server is designed to be used with MCP-compatible AI agents that can call tools
+//! through natural language requests:
+//!
+//! ```text
+//! User: "What's the ETH balance of vitalik.eth?"
+//! Agent: calls balance tool with ENS resolution
+//!
+//! User: "Swap 1 ETH for USDC on Uniswap"
+//! Agent: calls get_quote then swap_eth_for_tokens
+//!
+//! User: "Send 0.5 ETH to Alice"
+//! Agent: calls send tool with specified parameters
+//! ```
+//!
+//! # Server Capabilities
+//!
+//! - **Tools**: All blockchain and DeFi operations
+//! - **Prompts**: Standardized prompt templates (enabled for future use)
+//! - **Resources**: Access to blockchain data and contract information
+//! - **Protocol**: Full MCP protocol compliance with latest version support
+//!
+//! # Key Features
+//!
+//! - **Async operations**: Non-blocking blockchain interactions
+//! - **Comprehensive error handling**: Detailed error messages with operation context
+//! - **Thread safety**: Concurrent access support for multiple agent requests
+//! - **Extensible architecture**: Easy addition of new tools and capabilities
+//! - **Protocol compliance**: Standard MCP interface for broad agent compatibility
+//!
+//! # Dependencies
+//!
+//! Built on the `rmcp` (Rust MCP) framework with integration to `ethers` for blockchain
+//! operations, providing a robust foundation for DeFi automation and blockchain tooling.
 use anyhow::Result;
 use rmcp::handler::server::tool::{Parameters, ToolRouter};
 use rmcp::model::{Implementation, ProtocolVersion};

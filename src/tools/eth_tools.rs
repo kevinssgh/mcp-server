@@ -1,3 +1,55 @@
+//! Ethereum Virtual Machine (EVM) interaction tools.
+//!
+//! This module provides essential blockchain interaction capabilities for Ethereum-compatible networks.
+//! It implements standard EVM operations including balance queries, ETH transfers, contract inspection,
+//! and ERC20 token interactions through a unified interface.
+//!
+//! # Core Functionality
+//!
+//! - **Balance Management**: Query ETH and ERC20 token balances for any address
+//! - **ETH Transfers**: Send ETH between addresses with automatic wallet management
+//! - **Contract Inspection**: Verify contract deployment and retrieve bytecode information
+//! - **ERC20 Integration**: Full support for standard ERC20 token operations
+//!
+//! # Key Operations
+//!
+//! - [`get_balance`]: Retrieve ETH balance for any address
+//! - [`send`]: Transfer ETH between addresses with transaction confirmation
+//! - [`get_contract`]: Check contract deployment status and bytecode size
+//! - [`get_erc20_balance`]: Query ERC20 token balances using standard interface
+//!
+//! # Usage Examples
+//!
+//! ```rust
+//! // Check ETH balance
+//! let balance = multi_tool.get_balance("0x742d35Cc6aF4...".to_string()).await?;
+//!
+//! // Send ETH transaction
+//! let tx_hash = multi_tool.send(
+//!     "0x742d35Cc6aF4...".to_string(), // from
+//!     "0xd8dA6BF26964aF9D...".to_string(), // to
+//!     "1.5".to_string() // amount in ETH
+//! ).await?;
+//!
+//! // Check ERC20 token balance
+//! let token_balance = multi_tool.get_erc20_balance(
+//!     "0xA0b86a33E6441...".to_string(), // token contract
+//!     "0x742d35Cc6aF4...".to_string()  // account address
+//! ).await?;
+//! ```
+//!
+//! # Features
+//!
+//! - **Automatic wallet management**: Falls back to default wallet when sender wallet not found
+//! - **ENS support**: Accepts both addresses and ENS names as input
+//! - **Comprehensive error handling**: Detailed error messages with context
+//! - **Standard compliance**: Full ERC20 interface implementation
+//! - **Transaction receipts**: Returns confirmation details for all transactions
+//!
+//! # Dependencies
+//!
+//! Built on top of the `ethers` crate for robust Ethereum interaction, with automatic
+//! type conversions and gas management for seamless blockchain operations.
 use crate::tools::MultiTool;
 use crate::tools::traits::EvmTools;
 use anyhow::{Result, anyhow};

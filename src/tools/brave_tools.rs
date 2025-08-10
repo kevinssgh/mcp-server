@@ -1,3 +1,10 @@
+//! Brave Search integration module.
+//!
+//! Provides a wrapper for querying the Brave Search API via the `BraveTools` trait,
+//! including request building, authentication, and basic error handling.
+//!
+//! Note: This does not parse or deserialize the result for processing as the Agent will be
+//!         expected to interpret this.
 use anyhow::anyhow;
 use reqwest::Client;
 use rmcp::schemars;
@@ -14,12 +21,16 @@ const HEADER_ACCEPT: &str = "Accept";
 const HEADER_ACCEPT_ENCODING: &str = "Accept-Encoding";
 const HEADER_SUBSCRIPTION_TOKEN: &str = "X-Subscription-Token";
 
+/// Input payload for a Brave web search request.
+///
+/// Designed for use with API schemas and deserialization.
 #[derive(Debug, serde::Deserialize, schemars::JsonSchema)]
 pub struct WebSearchInput {
     #[schemars(description = "Query string to use for web search")]
     pub query: String,
 }
 
+/// Holds configuration and HTTP client for Brave Search requests.
 pub struct BraveContext {
     client: Client,
     api_key: String,
@@ -27,6 +38,10 @@ pub struct BraveContext {
 }
 
 impl BraveContext {
+    /// Creates a new Brave Search API context.
+    ///
+    /// # Arguments
+    /// * `api_key` - Brave Search API subscription token.
     pub fn new(api_key: String) -> Self {
         Self {
             client: Client::new(),
@@ -37,6 +52,15 @@ impl BraveContext {
 }
 
 impl BraveTools for MultiTool {
+    /// Performs a Brave web search using the given query string.
+    ///
+    /// Sends a GET request to the Brave Search API and returns the raw JSON response.
+    ///
+    /// # Arguments
+    /// * `query` - Search term to query Brave Search.
+    ///
+    /// # Errors
+    /// Returns an error if the HTTP request fails or if the API responds with a non-success status.
     async fn search(&self, query: String) -> anyhow::Result<String> {
         let url = format!("{}/web/search", self.brave_ctx.base_url);
 

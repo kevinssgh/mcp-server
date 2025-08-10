@@ -1,3 +1,18 @@
+//! 0x Protocol API integration module.
+//!
+//! Provides types and trait implementations for interacting with the [0x protocol](https://0x.org/)
+//! to retrieve token swap quotes.
+//!
+//! This module:
+//! - Defines the [`QuoteInput`] struct for specifying swap parameters.
+//! - Wraps HTTP client configuration in [`ZeroXContext`] for authenticated API access.
+//! - Implements [`ZeroXTools`] for requesting swap quotes, including automatic ETH-to-address
+//!   conversion when needed.
+//!
+//! API requests are sent to `https://api.0x.org` with appropriate authentication and query parameters,
+//! returning the raw JSON response from the 0x API.
+//!
+//! Note: This uses: ["/swap/permit2/price"], can be unavailable intermittently with a free API key.
 use anyhow::anyhow;
 use reqwest::Client;
 use rmcp::schemars;

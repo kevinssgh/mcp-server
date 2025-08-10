@@ -1,3 +1,43 @@
+//! Uniswap V2 Router integration module.
+//!
+//! This module provides tools for executing token swaps on Uniswap V2 through the router contract.
+//! It implements the core swap functionality including ETH-to-token and token-to-ETH exchanges
+//! with automatic slippage protection and balance validation.
+//!
+//! # Features
+//!
+//! - **ETH ⟷ ERC20 swaps**: Seamless conversion between ETH and any ERC20 token
+//! - **Slippage protection**: Automatic minimum output calculation with 10% safety margin
+//! - **Balance validation**: Pre-transaction checks to prevent insufficient fund failures
+//! - **Gas estimation**: Accounts for transaction costs in balance calculations
+//!
+//! # Key Functions
+//!
+//! - [`swap_eth_to_token`]: Convert ETH to ERC20 tokens using exact input amounts
+//! - [`swap_token_to_eth`]: Convert ERC20 tokens to ETH (requires prior token approval)
+//! - [`check_balance`]: Validate account has sufficient funds including gas costs
+//!
+//! # Usage
+//!
+//! ```rust
+//! // ETH to Token swap
+//! let eth_input = SwapEthInput {
+//!     uniswap_address: "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D".to_string(),
+//!     amount_in: "1.0".to_string(), // 1 ETH
+//!     min_amount_out: "1000000000000000000".to_string(), // Expected tokens in base units
+//!     to_token_addr: "0xA0b86a33E6441...".to_string(),
+//!     account_addr: "0x742d35Cc6aF4...".to_string(),
+//! };
+//!
+//! multi_tool.swap_eth_to_token(eth_input).await?;
+//! ```
+//!
+//! # Important Notes
+//!
+//! - Token-to-ETH swaps require prior approval of the Uniswap Router to spend tokens
+//! - All amounts are automatically adjusted for 10% slippage tolerance
+//! - Transactions include 5-minute deadline for execution
+//! - WETH conversion is handled automatically by the router contract
 use crate::tools::MultiTool;
 use crate::tools::traits::{EvmTools, UniSwapTools};
 use ethers::prelude::*;
@@ -98,6 +138,7 @@ impl UniSwapTools for MultiTool {
     /// # Returns
     /// * `Result<String>` - Success message with transaction hash and gas used, or error
     async fn swap_eth_to_token(&self, input: SwapEthInput) -> anyhow::Result<String> {
+        tracing::info!("Swapping Eth for Token");
         let token_addr = Address::from_str(&input.to_token_addr)?;
         let account_addr = Address::from_str(&input.account_addr)?;
         let weth_addr = Address::from_str(super::WETH_TOKEN_ADDRESS)?;
@@ -109,7 +150,7 @@ impl UniSwapTools for MultiTool {
         // This value might be 0 if the 0x protocol api isn't available.
         let expected_tokens_out = U256::from_dec_str(&input.min_amount_out)?;
 
-        // Calculate 90% directly (remove 10%) (SLIPPAGE COST)
+        // Calculate 90% directly (remove 10%) (SLIPPAGE COST) - Trying to allow swaps to go through since this is a test account
         let min_tokens_out = expected_tokens_out * U256::from(90) / U256::from(100);
         tracing::info!("Min TOKEN EXPECTED: {min_tokens_out}");
 
@@ -159,6 +200,7 @@ impl UniSwapTools for MultiTool {
     /// # Returns
     /// * `Result<String>` - Success message with transaction hash and gas used, or error
     async fn swap_token_to_eth(&self, input: SwapTokenInput) -> anyhow::Result<String> {
+        tracing::info!("Swapping Token for ETH");
         let from_token_addr = Address::from_str(&input.from_token_addr)?;
         let account_addr = Address::from_str(&input.account_addr)?;
         let weth_addr = Address::from_str(super::WETH_TOKEN_ADDRESS)?;

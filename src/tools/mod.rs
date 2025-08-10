@@ -1,3 +1,37 @@
+//! # MultiTool Module
+//!
+//! This module provides a unified interface for interacting with multiple blockchain and web services
+//! through the `MultiTool` struct. It aggregates various tools and contexts needed for DeFi operations,
+//! web searches, and Ethereum blockchain interactions.
+//!
+//! ## Components
+//!
+//! - **Ethereum Provider**: Connection to Ethereum RPC endpoint for blockchain operations
+//! - **Account Management**: Handles account-related functionality
+//! - **Brave Search Integration**: Provides web search capabilities via Brave API
+//! - **0x Protocol Integration**: Enables decentralized exchange functionality
+//!
+//! ## Submodules
+//!
+//! - `agent_mcp`: MCP (Model Context Protocol) agent functionality
+//! - `brave_tools`: Brave search API integration tools
+//! - `eth_tools`: Ethereum blockchain interaction utilities
+//! - `zero_x_tools`: 0x protocol integration for DEX operations
+//! - `uniswap_tools`: Uniswap protocol integration tools
+//! - `traits`: Common traits and interfaces
+//!
+//! ## Constants
+//!
+//! - `DEFAULT_ETH_TOKEN_ADDRESS`: Default Ethereum token address (ETH placeholder)
+//! - `WETH_TOKEN_ADDRESS`: Wrapped Ethereum (WETH) contract address on mainnet
+//!
+//! ## Usage
+//!
+//! ```rust
+//! let config = Config::load();
+//! let multitool = MultiTool::new(&config);
+//! // Use multitool for various blockchain and web operations
+//! ```
 use ethers::prelude::{Http, Provider};
 use std::sync::Arc;
 
