@@ -219,10 +219,6 @@ impl UniSwapTools for MultiTool {
         let path = vec![from_token_addr, weth_addr];
         let deadline = U256::from(SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 300);
 
-        // Check account balance first
-        // let balance = self.get_erc20_balance(input.from_token_addr, input.account_addr).await?;
-        // self.check_balance(token_amount_in, balance).await?;
-
         let contract = UniswapV2Router::new(contract_addr, self.eth_provider.clone());
 
         // Build transaction with input values
