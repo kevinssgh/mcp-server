@@ -1,4 +1,4 @@
-# mcp-server: An MCP server using Anthropic crate rmcp
+# mcp-server: An MCP server using crate rmcp
 
 ## Description
 An MCP server providing the following tools to an agentic system.
