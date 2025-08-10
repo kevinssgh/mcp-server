@@ -40,9 +40,3 @@ impl Default for Config {
         }
     }
 }
-
-// "0.0.0.0:3000"
-// eth_rpc: String::from("http://127.0.0.1:8545"),
-// brave_api_key: String::from("BSAurYK60YLTxZbBwMI2YhR-uIAVMAm"),
-// zero_x_api_key: String::from("a1672326-a68f-4dec-bd19-1dd1cd4fa1d0"),
-// }

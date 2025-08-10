@@ -8,6 +8,10 @@ use anyhow::Result;
 use rmcp::transport::sse_server::{SseServer, SseServerConfig};
 use tracing_subscriber::{self, EnvFilter};
 
+/// Main entry point for MCP Server.
+///
+/// This is very similar to the examples from the documentation for simplicity and to ensure it is
+/// set up correctly.
 #[tokio::main]
 async fn main() -> Result<()> {
     // Initialize logging
