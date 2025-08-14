@@ -15,5 +15,5 @@ tokio-util = "0.7.15"
 axum = { version = "0.8", features = ["macros"] }
 ethers = "2.0"
 hex = "0.4.3"
-reqwest = { version = "0.12.15", features = ["json"] }
+reqwest = { version = "0.12.15", features = ["gzip"] }
 regex = "1.11.1"
