@@ -8,8 +8,8 @@
 use anyhow::anyhow;
 use reqwest::Client;
 use rmcp::schemars;
-use std::collections::HashMap;
-
+use std::collections::{HashMap, HashSet};
+use regex::Regex;
 use crate::tools::MultiTool;
 use crate::tools::traits::BraveTools;
 
@@ -67,7 +67,7 @@ impl BraveTools for MultiTool {
         // Set Query parameters, can add more if needed
         let mut params = HashMap::new();
         params.insert(QUERY_PARAM, query.clone());
-        params.insert(QUERY_PARAM_COUNT, "10".to_string());
+        params.insert(QUERY_PARAM_COUNT, "3".to_string());
 
         let response = self
             .brave_ctx
@@ -89,7 +89,26 @@ impl BraveTools for MultiTool {
         }
 
         let formatted_results = response.text().await?;
+        let addresses = parse_addresses(&formatted_results);
 
-        Ok(formatted_results)
+        Ok(addresses.join(", "))
     }
+}
+
+fn parse_addresses(brave_result: &str) -> Vec<String> {
+    let mut seen = HashSet::new();
+    let mut unique_addresses = Vec::new();
+    let regex = Regex::new(r"0x[a-fA-F0-9]{40}").expect("Invalid regex pattern");
+
+    for cap in regex.find_iter(brave_result) {
+        let address = cap.as_str().to_string();
+        let address_lower = address.to_lowercase();
+
+        if !seen.contains(&address_lower) {
+            seen.insert(address_lower);
+            unique_addresses.push(address);
+        }
+    }
+
+    unique_addresses
 }
